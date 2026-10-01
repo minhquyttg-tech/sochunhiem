@@ -106,7 +106,10 @@
             <section id="module-students" class="module-content">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-2xl font-bold text-gray-800">Danh sách học sinh</h2>
-                    <button onclick="openModal('modal-add-student')" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition w-full sm:w-auto"><i class="fas fa-plus mr-2"></i>Thêm học sinh</button>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="openModal('modal-import-students')" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition flex-1 sm:flex-none text-center"><i class="fas fa-file-excel mr-2"></i>Import Excel</button>
+                        <button onclick="openModal('modal-add-student')" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition flex-1 sm:flex-none text-center"><i class="fas fa-plus mr-2"></i>Thêm học sinh</button>
+                    </div>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm overflow-x-auto border">
                     <table class="w-full text-left border-collapse min-w-[600px]">
@@ -288,6 +291,26 @@
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Lưu</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal 1.5: Import Excel Học Sinh -->
+    <div id="modal-import-students" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl w-full max-w-2xl p-6 relative mx-4">
+            <button onclick="closeModal('modal-import-students')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            <h3 class="text-xl font-bold mb-2">Import danh sách từ Excel</h3>
+            <p class="text-sm text-gray-600 mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <i class="fas fa-lightbulb text-yellow-500 mr-1"></i> <b>Hướng dẫn:</b> Mở file Excel của bạn, quét chọn các cột dữ liệu theo đúng thứ tự: <br>
+                <code class="text-blue-600 font-bold bg-blue-50 px-1 rounded mt-1 inline-block">Họ và tên | Ngày sinh | Giới tính | SĐT Phụ huynh</code><br>
+                Sau đó Copy (Ctrl+C) và Dán (Ctrl+V) vào khung trống bên dưới.
+            </p>
+            
+            <textarea id="import-data" rows="8" class="w-full border rounded-lg p-3 text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 mb-4 whitespace-pre font-mono" placeholder="Dán dữ liệu Excel vào đây..."></textarea>
+            
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeModal('modal-import-students')" class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50">Hủy</button>
+                <button type="button" onclick="processImport()" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"><i class="fas fa-upload mr-2"></i>Nhập dữ liệu</button>
+            </div>
         </div>
     </div>
 
@@ -573,27 +596,27 @@
             const cls = window.classList.find(c => c.id === window.currentClassId);
             document.getElementById('dash-class-name').innerText = cls ? cls.name : '';
             document.getElementById('dash-total').innerText = sts.length;
-            document.getElementById('dash-male').innerText = sts.filter(s => s.gender === 'Nam').length;
-            document.getElementById('dash-female').innerText = sts.filter(s => s.gender === 'Nữ').length;
+            document.getElementById('dash-male').innerText = sts.filter(s => s.gender === 'Nam' || s.gender === 'nam').length;
+            document.getElementById('dash-female').innerText = sts.filter(s => s.gender === 'Nữ' || s.gender === 'nữ' || s.gender === 'Nu' || s.gender === 'nu').length;
             
             const today = getTodayYYYYMMDD();
             const attToday = window.appData.attendance[today] || {};
             document.getElementById('dash-absent').innerText = Object.values(attToday).filter(status => status === 'absent').length;
         };
 
-        // --- HỌC SINH ---
+        // --- HỌC SINH & IMPORT ---
         window.renderStudents = () => {
             const tbody = document.getElementById('student-list-body');
             const sts = window.appData.students || [];
-            if(sts.length === 0) return tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500">Lớp chưa có học sinh. Vui lòng thêm mới.</td></tr>`;
+            if(sts.length === 0) return tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500">Lớp chưa có học sinh. Vui lòng thêm mới hoặc Import từ Excel.</td></tr>`;
             
             tbody.innerHTML = sts.map((hs, index) => `
                 <tr class="hover:bg-gray-50 transition">
                     <td class="py-3 px-4 text-center text-gray-500">${index + 1}</td>
                     <td class="py-3 px-4 font-medium text-gray-800">${hs.name}</td>
-                    <td class="py-3 px-4 text-gray-600">${hs.dob}</td>
-                    <td class="py-3 px-4 text-gray-600">${hs.gender}</td>
-                    <td class="py-3 px-4 text-gray-600">${hs.phone}</td>
+                    <td class="py-3 px-4 text-gray-600">${hs.dob || ''}</td>
+                    <td class="py-3 px-4 text-gray-600">${hs.gender || ''}</td>
+                    <td class="py-3 px-4 text-gray-600">${hs.phone || ''}</td>
                     <td class="py-3 px-4 text-center"><button onclick="deleteStudent('${hs.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('');
@@ -608,6 +631,52 @@
             });
             saveCurrentClassData(); closeModal('modal-add-student'); document.getElementById('form-add-student').reset(); refreshAllUI();
         };
+
+        window.processImport = () => {
+            const text = document.getElementById('import-data').value.trim();
+            if (!text) return alert("Vui lòng dán dữ liệu!");
+
+            const rows = text.split('\n');
+            let count = 0;
+
+            rows.forEach((row) => {
+                const cols = row.split('\t'); // Dữ liệu copy từ Excel mặc định phân cách bằng phím Tab
+                if (cols.length >= 1) { 
+                    const name = cols[0]?.trim();
+                    if(!name) return; // Bỏ qua dòng trống
+
+                    let dob = cols[1]?.trim() || '';
+                    let gender = cols[2]?.trim() || 'Nam';
+                    let phone = cols[3]?.trim() || '';
+
+                    // Chuẩn hóa giới tính để thống kê đúng
+                    const checkGender = gender.toLowerCase();
+                    if(checkGender === 'nữ' || checkGender === 'nu') gender = 'Nữ';
+                    else if (checkGender === 'nam') gender = 'Nam';
+
+                    // Thêm phần ngẫu nhiên để tránh trùng lặp ID khi import quá nhanh
+                    window.appData.students.push({
+                        id: 'hs_' + Date.now() + Math.random().toString(36).substr(2, 5),
+                        name: name,
+                        dob: dob,
+                        gender: gender,
+                        phone: phone
+                    });
+                    count++;
+                }
+            });
+
+            if (count > 0) {
+                saveCurrentClassData();
+                refreshAllUI();
+                closeModal('modal-import-students');
+                document.getElementById('import-data').value = '';
+                alert(`Đã import thành công ${count} học sinh!`);
+            } else {
+                alert("Không tìm thấy dữ liệu hợp lệ. Vui lòng kiểm tra lại định dạng.");
+            }
+        };
+
         window.deleteStudent = (id) => {
             if(confirm("Xóa học sinh này?")) { window.appData.students = window.appData.students.filter(s => s.id !== id); saveCurrentClassData(); refreshAllUI(); }
         };
