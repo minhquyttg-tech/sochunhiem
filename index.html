@@ -369,14 +369,14 @@
         // 1. CẤU HÌNH FIREBASE (Dán config của bạn)
         // ==========================================
         const firebaseConfig = {
-  apiKey: "AIzaSyBKjyQ8jc2ATyX5Hm6lLGmQk7L8O51AIm8",
-  authDomain: "so-chu-nhiem-34eac.firebaseapp.com",
-  projectId: "so-chu-nhiem-34eac",
-  storageBucket: "so-chu-nhiem-34eac.firebasestorage.app",
-  messagingSenderId: "570164566874",
-  appId: "1:570164566874:web:37c7fe378ff5790c663163",
-  measurementId: "G-H6CFFHJLEB"
-};
+            apiKey: "AIzaSyBKjyQ8jc2ATyX5Hm6lLGmQk7L8O51AIm8",
+            authDomain: "so-chu-nhiem-34eac.firebaseapp.com",
+            projectId: "so-chu-nhiem-34eac",
+            storageBucket: "so-chu-nhiem-34eac.firebasestorage.app",
+            messagingSenderId: "570164566874",
+            appId: "1:570164566874:web:37c7fe378ff5790c663163",
+            measurementId: "G-H6CFFHJLEB"
+        };
 
         let db = null;
         let isCloudEnabled = false;
@@ -397,8 +397,8 @@
         // ==========================================
         // 2. BIẾN TOÀN CỤC & TRẠNG THÁI
         // ==========================================
-        window.classList = []; // [{id: 'class_1', name: 'Lớp 6A1'}]
-        window.teacherTimetable = {}; // Dữ liệu TKB chung của GV
+        window.classList = []; 
+        window.teacherTimetable = {}; 
         window.currentClassId = null;
         window.appData = createEmptyClassData();
 
@@ -409,7 +409,7 @@
                 notes: {}, 
                 grades: {}, 
                 gradeColumns: {},
-                reviews: {}    // Lưu nhận xét: { 'Giữa HK1': { hs_id: { level: 'Tốt', comment: '...' } } }
+                reviews: {}    
             };
         }
 
@@ -443,13 +443,16 @@
             }
 
             if (window.classList.length === 0) {
-                window.classList = [{ id: 'class_' + Date.now(), name: 'Lớp Mẫu' }];
+                window.classList = [{ id: 'class_' + Date.now(), name: 'Lớp Mặc Định' }];
                 saveMasterConfig();
             }
             
             updateHeaderClassSelect();
             if(!window.currentClassId) window.currentClassId = window.classList[0].id;
             document.getElementById('header-class-select').value = window.currentClassId;
+            
+            // Tải dữ liệu của lớp hiện tại ra màn hình ngay khi vừa F5
+            await loadClassData(window.currentClassId);
         }
 
         async function saveMasterConfig() {
@@ -640,21 +643,19 @@
             let count = 0;
 
             rows.forEach((row) => {
-                const cols = row.split('\t'); // Dữ liệu copy từ Excel mặc định phân cách bằng phím Tab
+                const cols = row.split('\t'); 
                 if (cols.length >= 1) { 
                     const name = cols[0]?.trim();
-                    if(!name) return; // Bỏ qua dòng trống
+                    if(!name) return; 
 
                     let dob = cols[1]?.trim() || '';
                     let gender = cols[2]?.trim() || 'Nam';
                     let phone = cols[3]?.trim() || '';
 
-                    // Chuẩn hóa giới tính để thống kê đúng
                     const checkGender = gender.toLowerCase();
                     if(checkGender === 'nữ' || checkGender === 'nu') gender = 'Nữ';
                     else if (checkGender === 'nam') gender = 'Nam';
 
-                    // Thêm phần ngẫu nhiên để tránh trùng lặp ID khi import quá nhanh
                     window.appData.students.push({
                         id: 'hs_' + Date.now() + Math.random().toString(36).substr(2, 5),
                         name: name,
