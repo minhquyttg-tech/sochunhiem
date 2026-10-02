@@ -541,11 +541,20 @@
             openModal('modal-config-columns');
         };
 
+        // --- ĐOẠN CODE MỚI ĐƯỢC THÊM VÀ SỬA ---
+        window.updateTempColName = (index, val) => {
+            tempColsConfig[index].name = val;
+        };
+        
+        window.updateTempColWeight = (index, val) => {
+            tempColsConfig[index].weight = parseInt(val);
+        };
+
         function renderColConfigList() {
             document.getElementById('config-col-list').innerHTML = tempColsConfig.map((col, index) => `
                 <div class="flex gap-2 mb-3 items-center">
-                    <input type="text" value="${col.name}" onchange="tempColsConfig[${index}].name = this.value" class="flex-1 border rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" placeholder="Tên cột">
-                    <select onchange="tempColsConfig[${index}].weight = parseInt(this.value)" class="w-24 border rounded px-2 py-1.5 text-sm outline-none">
+                    <input type="text" value="${col.name}" oninput="updateTempColName(${index}, this.value)" class="flex-1 border rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" placeholder="Tên cột">
+                    <select onchange="updateTempColWeight(${index}, this.value)" class="w-24 border rounded px-2 py-1.5 text-sm outline-none">
                         <option value="1" ${col.weight === 1 ? 'selected' : ''}>Hệ số 1</option>
                         <option value="2" ${col.weight === 2 ? 'selected' : ''}>Hệ số 2</option>
                         <option value="3" ${col.weight === 3 ? 'selected' : ''}>Hệ số 3</option>
@@ -554,6 +563,7 @@
                 </div>
             `).join('');
         }
+        // --- KẾT THÚC ĐOẠN CODE MỚI ---
 
         window.addGradeColumnInput = () => { tempColsConfig.push({ id: 'col_' + Date.now(), name: 'Cột mới', weight: 1 }); renderColConfigList(); };
         window.removeTempCol = (index) => { tempColsConfig.splice(index, 1); renderColConfigList(); };
